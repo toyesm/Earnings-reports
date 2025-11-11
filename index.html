@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Earnings Report Analyzer</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        function App() {
+            const [ticker, setTicker] = useState('');
+            const [fmpApiKey, setFmpApiKey] = useState(localStorage.getItem('fmpApiKey') || '');
+            const [claudeApiKey, setClaudeApiKey] = useState(localStorage.getItem('claudeApiKey') || '');
+            const [geminiApiKey, setGeminiApiKey] = useState(localStorage.getItem('geminiApiKey') || '');
+            const [selectedAI, setSelectedAI] = useState('claude');
+            const [earningsData, setEarningsData] = useState(null);
+            const [aiAnalysis, setAiAnalysis] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [analyzing, setAnalyzing] = useState(false);
+            const [error, setError] = useState('');
+            const [showApiSettings, setShowApiSettings] = useState(false);
+
+            const revenueChartRef = useRef(null);
+            const epsChartRef = useRef(null);
+            const marginsChartRef = useRef(null);
+            const revenueChartInstance = useRef(null);
+            const epsChartInstance = useRef(null);
+            const marginsChartInstance = useRef(null);
+
+            // Save API keys to localStorage
+            useEffect(() => {
+                if (fmpApiKey) localStorage.setItem('fmpApiKey', fmpApiKey);
+                if (claudeApiKey) localStorage.setItem('claudeApiKey', claudeApiKey);
+                if (geminiApiKey) localStorage.setItem('geminiApiKey', geminiApiKey);
+            }, [fmpApiKey, claudeApiKey, geminiApiKey]);
+
+            const fetchEarningsData = async () => {
+                if (!ticker.trim()) {
+                    setError('Please enter a stock ticker symbol');
+                    return;
+                }
+
+                if (!fmpApiKey.trim()) {
+                    setError('Please configure your Financial Modeling Prep API key in settings');
+                    setShowApiSettings(true);
+                    return;
+                }
+
+                setLoading(true);
+                setError('');
+                setEarningsData(null);
+                setAiAnalysis('');
+
+                try {
+                    const response = await fetch(
+                        `https://financialmodelingprep.com/api/v3/income-statement/${ticker.toUpperCase()}?period=annual&limit=5&apikey=${fmpApiKey}`
+                    );
+
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch earnings data. Please check your API key and ticker symbol.');
+                    }
+
+                    const data = await response.json();
+
+                    if (!data || data.length === 0) {
+                        throw new Error('No earnings data found for this ticker symbol');
+                    }
+
+                    // Sort by date (oldest to newest for charts)
+                    const sortedData = data.sort((a, b) =>
+                        new Date(a.date) - new Date(b.date)
+                    );
+
+                    setEarningsData(sortedData);
+                } catch (err) {
+                    setError(err.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const analyzeWithAI = async () => {
+                if (!earningsData) {
+                    setError('Please fetch earnings data first');
+                    return;
+                }
+
+                const apiKey = selectedAI === 'claude' ? claudeApiKey : geminiApiKey;
+                if (!apiKey.trim()) {
+                    setError(`Please configure your ${selectedAI === 'claude' ? 'Claude' : 'Gemini'} API key in settings`);
+                    setShowApiSettings(true);
+                    return;
+                }
+
+                setAnalyzing(true);
+                setError('');
+                setAiAnalysis('');
+
+                try {
+                    const latestData = earningsData[earningsData.length - 1];
+                    const prompt = `Analyze the following earnings data for ${ticker.toUpperCase()} and provide insights:
+
+Latest Year: ${latestData.calendarYear}
+Revenue: $${(latestData.revenue / 1e9).toFixed(2)}B
+Net Income: $${(latestData.netIncome / 1e9).toFixed(2)}B
+EPS: $${latestData.eps?.toFixed(2)}
+Operating Margin: ${((latestData.operatingIncome / latestData.revenue) * 100).toFixed(2)}%
+Net Profit Margin: ${((latestData.netIncome / latestData.revenue) * 100).toFixed(2)}%
+
+5-Year Trend:
+${earningsData.map(d => `${d.calendarYear}: Revenue $${(d.revenue / 1e9).toFixed(2)}B, Net Income $${(d.netIncome / 1e9).toFixed(2)}B, EPS $${d.eps?.toFixed(2)}`).join('\n')}
+
+Please provide:
+1. Overall financial health assessment
+2. Key trends and patterns
+3. Strengths and concerns
+4. Future outlook considerations
+
+Keep the analysis concise and actionable.`;
+
+                    let analysis = '';
+
+                    if (selectedAI === 'claude') {
+                        const response = await fetch('https://api.anthropic.com/v1/messages', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'x-api-key': claudeApiKey,
+                                'anthropic-version': '2023-06-01'
+                            },
+                            body: JSON.stringify({
+                                model: 'claude-3-5-sonnet-20241022',
+                                max_tokens: 1024,
+                                messages: [{
+                                    role: 'user',
+                                    content: prompt
+                                }]
+                            })
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error?.message || 'Failed to get analysis from Claude');
+                        }
+
+                        const data = await response.json();
+                        analysis = data.content[0].text;
+                    } else {
+                        const response = await fetch(
+                            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`,
+                            {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    contents: [{
+                                        parts: [{
+                                            text: prompt
+                                        }]
+                                    }]
+                                })
+                            }
+                        );
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error?.message || 'Failed to get analysis from Gemini');
+                        }
+
+                        const data = await response.json();
+                        analysis = data.candidates[0].content.parts[0].text;
+                    }
+
+                    setAiAnalysis(analysis);
+                } catch (err) {
+                    setError(err.message);
+                } finally {
+                    setAnalyzing(false);
+                }
+            };
+
+            // Create charts when data is available
+            useEffect(() => {
+                if (!earningsData || earningsData.length === 0) return;
+
+                // Destroy existing charts
+                if (revenueChartInstance.current) {
+                    revenueChartInstance.current.destroy();
+                }
+                if (epsChartInstance.current) {
+                    epsChartInstance.current.destroy();
+                }
+                if (marginsChartInstance.current) {
+                    marginsChartInstance.current.destroy();
+                }
+
+                const years = earningsData.map(d => d.calendarYear);
+                const revenues = earningsData.map(d => (d.revenue / 1e9).toFixed(2));
+                const netIncomes = earningsData.map(d => (d.netIncome / 1e9).toFixed(2));
+                const eps = earningsData.map(d => d.eps?.toFixed(2) || 0);
+                const operatingMargins = earningsData.map(d =>
+                    ((d.operatingIncome / d.revenue) * 100).toFixed(2)
+                );
+                const netMargins = earningsData.map(d =>
+                    ((d.netIncome / d.revenue) * 100).toFixed(2)
+                );
+
+                const chartOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                };
+
+                // Revenue and Net Income Chart
+                if (revenueChartRef.current) {
+                    revenueChartInstance.current = new Chart(revenueChartRef.current, {
+                        type: 'bar',
+                        data: {
+                            labels: years,
+                            datasets: [
+                                {
+                                    label: 'Revenue ($B)',
+                                    data: revenues,
+                                    backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                                    borderColor: 'rgba(102, 126, 234, 1)',
+                                    borderWidth: 2
+                                },
+                                {
+                                    label: 'Net Income ($B)',
+                                    data: netIncomes,
+                                    backgroundColor: 'rgba(118, 75, 162, 0.7)',
+                                    borderColor: 'rgba(118, 75, 162, 1)',
+                                    borderWidth: 2
+                                }
+                            ]
+                        },
+                        options: chartOptions
+                    });
+                }
+
+                // EPS Chart
+                if (epsChartRef.current) {
+                    epsChartInstance.current = new Chart(epsChartRef.current, {
+                        type: 'line',
+                        data: {
+                            labels: years,
+                            datasets: [{
+                                label: 'EPS ($)',
+                                data: eps,
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: chartOptions
+                    });
+                }
+
+                // Margins Chart
+                if (marginsChartRef.current) {
+                    marginsChartInstance.current = new Chart(marginsChartRef.current, {
+                        type: 'line',
+                        data: {
+                            labels: years,
+                            datasets: [
+                                {
+                                    label: 'Operating Margin (%)',
+                                    data: operatingMargins,
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    borderWidth: 3,
+                                    fill: true,
+                                    tension: 0.4
+                                },
+                                {
+                                    label: 'Net Profit Margin (%)',
+                                    data: netMargins,
+                                    borderColor: 'rgba(255, 206, 86, 1)',
+                                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                                    borderWidth: 3,
+                                    fill: true,
+                                    tension: 0.4
+                                }
+                            ]
+                        },
+                        options: chartOptions
+                    });
+                }
+
+                // Cleanup
+                return () => {
+                    if (revenueChartInstance.current) {
+                        revenueChartInstance.current.destroy();
+                    }
+                    if (epsChartInstance.current) {
+                        epsChartInstance.current.destroy();
+                    }
+                    if (marginsChartInstance.current) {
+                        marginsChartInstance.current.destroy();
+                    }
+                };
+            }, [earningsData]);
+
+            const exampleTickers = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA'];
+
+            return (
+                <div className="max-w-7xl mx-auto">
+                    {/* Header */}
+                    <div className="glass rounded-2xl p-6 md:p-8 mb-6 animate-fade-in">
+                        <h1 className="text-3xl md:text-5xl font-bold text-white mb-2">
+                            📊 AI Earnings Analyzer
+                        </h1>
+                        <p className="text-gray-200 text-sm md:text-base">
+                            Analyze company earnings with AI-powered insights from Claude and Gemini
+                        </p>
+                    </div>
+
+                    {/* API Settings */}
+                    <div className="glass rounded-2xl p-6 mb-6 animate-fade-in">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                                🔐 API Configuration
+                            </h2>
+                            <button
+                                onClick={() => setShowApiSettings(!showApiSettings)}
+                                className="text-white hover:text-gray-300 transition-colors"
+                            >
+                                {showApiSettings ? '▼' : '▶'}
+                            </button>
+                        </div>
+
+                        {showApiSettings && (
+                            <div className="space-y-4 animate-fade-in">
+                                <div>
+                                    <label className="block text-white text-sm mb-2">
+                                        Financial Modeling Prep API Key *
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={fmpApiKey}
+                                        onChange={(e) => setFmpApiKey(e.target.value)}
+                                        placeholder="Enter your FMP API key"
+                                        className="w-full px-4 py-2 rounded-lg glass-dark text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    />
+                                    <p className="text-gray-300 text-xs mt-1">
+                                        Get your free API key at <a href="https://financialmodelingprep.com/developer/docs/" target="_blank" className="underline">financialmodelingprep.com</a>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-white text-sm mb-2">
+                                        Claude API Key (Optional)
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={claudeApiKey}
+                                        onChange={(e) => setClaudeApiKey(e.target.value)}
+                                        placeholder="Enter your Claude API key"
+                                        className="w-full px-4 py-2 rounded-lg glass-dark text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    />
+                                    <p className="text-gray-300 text-xs mt-1">
+                                        Get your API key at <a href="https://console.anthropic.com/" target="_blank" className="underline">console.anthropic.com</a>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-white text-sm mb-2">
+                                        Gemini API Key (Optional)
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={geminiApiKey}
+                                        onChange={(e) => setGeminiApiKey(e.target.value)}
+                                        placeholder="Enter your Gemini API key"
+                                        className="w-full px-4 py-2 rounded-lg glass-dark text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    />
+                                    <p className="text-gray-300 text-xs mt-1">
+                                        Get your API key at <a href="https://makersuite.google.com/app/apikey" target="_blank" className="underline">makersuite.google.com</a>
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Search Section */}
+                    <div className="glass rounded-2xl p-6 mb-6 animate-fade-in">
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <div className="flex-1">
+                                <input
+                                    type="text"
+                                    value={ticker}
+                                    onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                                    onKeyPress={(e) => e.key === 'Enter' && fetchEarningsData()}
+                                    placeholder="Enter stock ticker (e.g., AAPL)"
+                                    className="w-full px-4 py-3 rounded-lg glass-dark text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-lg"
+                                />
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                    <span className="text-white text-sm">Try:</span>
+                                    {exampleTickers.map(t => (
+                                        <button
+                                            key={t}
+                                            onClick={() => setTicker(t)}
+                                            className="px-3 py-1 glass-dark rounded-full text-white text-sm hover:bg-white hover:bg-opacity-20 transition-all"
+                                        >
+                                            {t}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <button
+                                onClick={fetchEarningsData}
+                                disabled={loading}
+                                className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loading ? 'Loading...' : 'Analyze'}
+                            </button>
+                        </div>
+
+                        {error && (
+                            <div className="mt-4 p-4 glass-dark rounded-lg border border-red-500">
+                                <p className="text-red-300">⚠️ {error}</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Loading Spinner */}
+                    {loading && (
+                        <div className="glass rounded-2xl p-12 mb-6 flex flex-col items-center justify-center animate-fade-in">
+                            <div className="loading-spinner mb-4"></div>
+                            <p className="text-white text-lg">Fetching earnings data...</p>
+                        </div>
+                    )}
+
+                    {/* Summary Cards */}
+                    {earningsData && earningsData.length > 0 && (
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 animate-fade-in">
+                                {(() => {
+                                    const latest = earningsData[earningsData.length - 1];
+                                    return (
+                                        <>
+                                            <div className="glass rounded-xl p-6">
+                                                <p className="text-gray-300 text-sm mb-1">Revenue</p>
+                                                <p className="text-white text-2xl font-bold">
+                                                    ${(latest.revenue / 1e9).toFixed(2)}B
+                                                </p>
+                                                <p className="text-gray-400 text-xs mt-1">{latest.calendarYear}</p>
+                                            </div>
+                                            <div className="glass rounded-xl p-6">
+                                                <p className="text-gray-300 text-sm mb-1">Net Income</p>
+                                                <p className="text-white text-2xl font-bold">
+                                                    ${(latest.netIncome / 1e9).toFixed(2)}B
+                                                </p>
+                                                <p className="text-gray-400 text-xs mt-1">{latest.calendarYear}</p>
+                                            </div>
+                                            <div className="glass rounded-xl p-6">
+                                                <p className="text-gray-300 text-sm mb-1">EPS</p>
+                                                <p className="text-white text-2xl font-bold">
+                                                    ${latest.eps?.toFixed(2)}
+                                                </p>
+                                                <p className="text-gray-400 text-xs mt-1">{latest.calendarYear}</p>
+                                            </div>
+                                            <div className="glass rounded-xl p-6">
+                                                <p className="text-gray-300 text-sm mb-1">Net Margin</p>
+                                                <p className="text-white text-2xl font-bold">
+                                                    {((latest.netIncome / latest.revenue) * 100).toFixed(2)}%
+                                                </p>
+                                                <p className="text-gray-400 text-xs mt-1">{latest.calendarYear}</p>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
+                            </div>
+
+                            {/* Charts */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                                <div className="glass rounded-2xl p-6 animate-fade-in">
+                                    <h3 className="text-xl font-semibold text-white mb-4">
+                                        Revenue & Net Income
+                                    </h3>
+                                    <div className="chart-container">
+                                        <canvas ref={revenueChartRef}></canvas>
+                                    </div>
+                                </div>
+
+                                <div className="glass rounded-2xl p-6 animate-fade-in">
+                                    <h3 className="text-xl font-semibold text-white mb-4">
+                                        Earnings Per Share (EPS)
+                                    </h3>
+                                    <div className="chart-container">
+                                        <canvas ref={epsChartRef}></canvas>
+                                    </div>
+                                </div>
+
+                                <div className="glass rounded-2xl p-6 animate-fade-in lg:col-span-2">
+                                    <h3 className="text-xl font-semibold text-white mb-4">
+                                        Profit Margins
+                                    </h3>
+                                    <div className="chart-container">
+                                        <canvas ref={marginsChartRef}></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* AI Analysis Section */}
+                            <div className="glass rounded-2xl p-6 animate-fade-in">
+                                <h3 className="text-xl font-semibold text-white mb-4">
+                                    🤖 AI Analysis
+                                </h3>
+
+                                <div className="flex flex-col md:flex-row gap-4 mb-4">
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setSelectedAI('claude')}
+                                            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                                                selectedAI === 'claude'
+                                                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                                                    : 'glass-dark text-gray-300 hover:bg-white hover:bg-opacity-10'
+                                            }`}
+                                        >
+                                            Claude AI
+                                        </button>
+                                        <button
+                                            onClick={() => setSelectedAI('gemini')}
+                                            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                                                selectedAI === 'gemini'
+                                                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                                                    : 'glass-dark text-gray-300 hover:bg-white hover:bg-opacity-10'
+                                            }`}
+                                        >
+                                            Gemini AI
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={analyzeWithAI}
+                                        disabled={analyzing}
+                                        className="px-8 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg font-semibold hover:from-green-600 hover:to-teal-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {analyzing ? 'Analyzing...' : 'Get AI Insights'}
+                                    </button>
+                                </div>
+
+                                {analyzing && (
+                                    <div className="flex items-center justify-center py-8">
+                                        <div className="loading-spinner"></div>
+                                        <p className="text-white ml-4">Analyzing with {selectedAI === 'claude' ? 'Claude' : 'Gemini'}...</p>
+                                    </div>
+                                )}
+
+                                {aiAnalysis && (
+                                    <div className="glass-dark rounded-lg p-6 animate-fade-in">
+                                        <div className="text-white whitespace-pre-wrap leading-relaxed">
+                                            {aiAnalysis}
+                                        </div>
+                                        <div className="mt-4 pt-4 border-t border-gray-600">
+                                            <p className="text-gray-400 text-sm">
+                                                Analysis powered by {selectedAI === 'claude' ? 'Claude AI' : 'Gemini AI'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Footer */}
+                    <div className="glass rounded-2xl p-6 mt-6 text-center animate-fade-in">
+                        <p className="text-gray-200 text-sm">
+                            Built with ❤️ using React, Chart.js, Tailwind CSS, Claude AI, and Gemini AI
+                        </p>
+                        <p className="text-gray-300 text-xs mt-2">
+                            Data provided by Financial Modeling Prep API
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
