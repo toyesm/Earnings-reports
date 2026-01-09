@@ -39,7 +39,9 @@ A modern, single-page web application that analyzes company earnings reports usi
 
 ## 🚀 Live Demo
 
-**Coming Soon:** `https://toyesm.github.io/Earnings-reports/`
+**[View Live Demo →](https://toyesm.github.io/Earnings-reports/)**
+
+Try the demo mode to explore features without API keys!
 
 ## 📋 Prerequisites
 
