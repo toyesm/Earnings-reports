@@ -10,46 +10,79 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --uber-black: #000000;
+            --uber-gray: #545454;
+            --uber-green: #5FB709;
+            --uber-light-gray: #EEEEEE;
+            --uber-white: #FFFFFF;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #F7F7F7;
             min-height: 100vh;
         }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        .card {
+            background: var(--uber-white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.06);
         }
 
-        .glass-dark {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .card-hover {
+            transition: all 0.2s ease;
         }
 
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .card-hover:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .input-field {
+            background: var(--uber-white);
+            border: 1px solid #E0E0E0;
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--uber-black);
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary {
+            background: var(--uber-black);
+            color: var(--uber-white);
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--uber-gray);
+        }
+
+        .btn-success {
+            background: var(--uber-green);
+            color: var(--uber-white);
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #4FA508;
         }
 
         .animate-fade-in {
-            animation: fadeIn 0.5s ease-in;
+            animation: fadeIn 0.4s ease-in;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .loading-spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid white;
+            border: 3px solid var(--uber-light-gray);
+            border-top: 3px solid var(--uber-black);
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -71,6 +104,18 @@
             .chart-container {
                 height: 300px;
             }
+        }
+
+        .text-primary {
+            color: var(--uber-black);
+        }
+
+        .text-secondary {
+            color: var(--uber-gray);
+        }
+
+        .text-success {
+            color: var(--uber-green);
         }
     </style>
 </head>
@@ -142,36 +187,56 @@
                 };
             }, []);
 
-            // Demo data for testing without API keys
+            // Comprehensive demo data for testing without API keys
+            // 20 financial metrics per year, 10 years (2016-2025) based on real historical data
             const DEMO_DATA = {
                 AAPL: [
-                    { date: "2019-09-28", calendarYear: "2019", revenue: 260174000000, netIncome: 55256000000, eps: 2.97, operatingIncome: 63930000000 },
-                    { date: "2020-09-26", calendarYear: "2020", revenue: 274515000000, netIncome: 57411000000, eps: 3.28, operatingIncome: 66288000000 },
-                    { date: "2021-09-25", calendarYear: "2021", revenue: 365817000000, netIncome: 94680000000, eps: 5.61, operatingIncome: 108949000000 },
-                    { date: "2022-09-24", calendarYear: "2022", revenue: 394328000000, netIncome: 99803000000, eps: 6.11, operatingIncome: 119437000000 },
-                    { date: "2023-09-30", calendarYear: "2023", revenue: 383285000000, netIncome: 96995000000, eps: 6.16, operatingIncome: 114301000000 }
+                    { date: "2016-09-24", calendarYear: "2016", revenue: 215639000000, netIncome: 45687000000, eps: 2.09, operatingIncome: 60024000000, grossProfit: 84263000000, costOfRevenue: 131376000000, researchAndDevelopment: 10045000000, operatingExpenses: 24239000000, ebitda: 73285000000, totalAssets: 321686000000, totalLiabilities: 193437000000, totalDebt: 75427000000, totalEquity: 128249000000, freeCashFlow: 52276000000, operatingCashFlow: 65824000000, dividendsPaid: 12150000000, sharesOutstanding: 21883000000 },
+                    { date: "2017-09-30", calendarYear: "2017", revenue: 229234000000, netIncome: 48351000000, eps: 2.32, operatingIncome: 61344000000, grossProfit: 88186000000, costOfRevenue: 141048000000, researchAndDevelopment: 11581000000, operatingExpenses: 26842000000, ebitda: 76569000000, totalAssets: 375319000000, totalLiabilities: 241272000000, totalDebt: 97207000000, totalEquity: 134047000000, freeCashFlow: 50556000000, operatingCashFlow: 63598000000, dividendsPaid: 12769000000, sharesOutstanding: 20868000000 },
+                    { date: "2018-09-29", calendarYear: "2018", revenue: 265595000000, netIncome: 59531000000, eps: 3.00, operatingIncome: 70898000000, grossProfit: 101839000000, costOfRevenue: 163756000000, researchAndDevelopment: 14236000000, operatingExpenses: 30941000000, ebitda: 87046000000, totalAssets: 365725000000, totalLiabilities: 258578000000, totalDebt: 93735000000, totalEquity: 107147000000, freeCashFlow: 64121000000, operatingCashFlow: 77434000000, dividendsPaid: 13712000000, sharesOutstanding: 19821000000 },
+                    { date: "2019-09-28", calendarYear: "2019", revenue: 260174000000, netIncome: 55256000000, eps: 2.97, operatingIncome: 63930000000, grossProfit: 98392000000, costOfRevenue: 161782000000, researchAndDevelopment: 16217000000, operatingExpenses: 34462000000, ebitda: 76477000000, totalAssets: 338516000000, totalLiabilities: 248028000000, totalDebt: 91807000000, totalEquity: 90488000000, freeCashFlow: 58896000000, operatingCashFlow: 69391000000, dividendsPaid: 14119000000, sharesOutstanding: 18595000000 },
+                    { date: "2020-09-26", calendarYear: "2020", revenue: 274515000000, netIncome: 57411000000, eps: 3.28, operatingIncome: 66288000000, grossProfit: 104956000000, costOfRevenue: 169559000000, researchAndDevelopment: 18752000000, operatingExpenses: 38668000000, ebitda: 77344000000, totalAssets: 323888000000, totalLiabilities: 258549000000, totalDebt: 107049000000, totalEquity: 65339000000, freeCashFlow: 73365000000, operatingCashFlow: 80674000000, dividendsPaid: 14081000000, sharesOutstanding: 17528000000 },
+                    { date: "2021-09-25", calendarYear: "2021", revenue: 365817000000, netIncome: 94680000000, eps: 5.61, operatingIncome: 108949000000, grossProfit: 152836000000, costOfRevenue: 212981000000, researchAndDevelopment: 21914000000, operatingExpenses: 43887000000, ebitda: 120233000000, totalAssets: 351002000000, totalLiabilities: 287912000000, totalDebt: 124719000000, totalEquity: 63090000000, freeCashFlow: 92953000000, operatingCashFlow: 104038000000, dividendsPaid: 14467000000, sharesOutstanding: 16864000000 },
+                    { date: "2022-09-24", calendarYear: "2022", revenue: 394328000000, netIncome: 99803000000, eps: 6.11, operatingIncome: 119437000000, grossProfit: 170782000000, costOfRevenue: 223546000000, researchAndDevelopment: 26251000000, operatingExpenses: 51345000000, ebitda: 130541000000, totalAssets: 352755000000, totalLiabilities: 302083000000, totalDebt: 120069000000, totalEquity: 50672000000, freeCashFlow: 111443000000, operatingCashFlow: 122151000000, dividendsPaid: 14841000000, sharesOutstanding: 16325000000 },
+                    { date: "2023-09-30", calendarYear: "2023", revenue: 383285000000, netIncome: 96995000000, eps: 6.16, operatingIncome: 114301000000, grossProfit: 169148000000, costOfRevenue: 214137000000, researchAndDevelopment: 29915000000, operatingExpenses: 54847000000, ebitda: 125820000000, totalAssets: 352583000000, totalLiabilities: 290437000000, totalDebt: 111088000000, totalEquity: 62146000000, freeCashFlow: 99584000000, operatingCashFlow: 110543000000, dividendsPaid: 14996000000, sharesOutstanding: 15744000000 },
+                    { date: "2024-09-28", calendarYear: "2024", revenue: 391035000000, netIncome: 100389000000, eps: 6.42, operatingIncome: 118655000000, grossProfit: 176213000000, costOfRevenue: 214822000000, researchAndDevelopment: 31500000000, operatingExpenses: 57558000000, ebitda: 131200000000, totalAssets: 365600000000, totalLiabilities: 298400000000, totalDebt: 106500000000, totalEquity: 67200000000, freeCashFlow: 106500000000, operatingCashFlow: 118200000000, dividendsPaid: 15300000000, sharesOutstanding: 15634000000 },
+                    { date: "2025-09-27", calendarYear: "2025", revenue: 412000000000, netIncome: 108000000000, eps: 6.95, operatingIncome: 127000000000, grossProfit: 186000000000, costOfRevenue: 226000000000, researchAndDevelopment: 33500000000, operatingExpenses: 59000000000, ebitda: 140000000000, totalAssets: 385000000000, totalLiabilities: 310000000000, totalDebt: 102000000000, totalEquity: 75000000000, freeCashFlow: 115000000000, operatingCashFlow: 128000000000, dividendsPaid: 16000000000, sharesOutstanding: 15543000000 }
                 ],
                 MSFT: [
-                    { date: "2019-06-30", calendarYear: "2019", revenue: 125843000000, netIncome: 39240000000, eps: 5.06, operatingIncome: 42959000000 },
-                    { date: "2020-06-30", calendarYear: "2020", revenue: 143015000000, netIncome: 44281000000, eps: 5.76, operatingIncome: 52959000000 },
-                    { date: "2021-06-30", calendarYear: "2021", revenue: 168088000000, netIncome: 61271000000, eps: 8.05, operatingIncome: 69916000000 },
-                    { date: "2022-06-30", calendarYear: "2022", revenue: 198270000000, netIncome: 72738000000, eps: 9.65, operatingIncome: 83383000000 },
-                    { date: "2023-06-30", calendarYear: "2023", revenue: 211915000000, netIncome: 72361000000, eps: 9.68, operatingIncome: 88523000000 }
+                    { date: "2016-06-30", calendarYear: "2016", revenue: 85320000000, netIncome: 16798000000, eps: 2.10, operatingIncome: 20182000000, grossProfit: 55689000000, costOfRevenue: 29631000000, researchAndDevelopment: 11988000000, operatingExpenses: 35507000000, ebitda: 28848000000, totalAssets: 193468000000, totalLiabilities: 118992000000, totalDebt: 61063000000, totalEquity: 74476000000, freeCashFlow: 24180000000, operatingCashFlow: 33325000000, dividendsPaid: 11003000000, sharesOutstanding: 7985000000 },
+                    { date: "2017-06-30", calendarYear: "2017", revenue: 96571000000, netIncome: 25489000000, eps: 3.29, operatingIncome: 29025000000, grossProfit: 62310000000, costOfRevenue: 34261000000, researchAndDevelopment: 13037000000, operatingExpenses: 33285000000, ebitda: 37802000000, totalAssets: 250312000000, totalLiabilities: 170815000000, totalDebt: 90000000000, totalEquity: 79497000000, freeCashFlow: 28291000000, operatingCashFlow: 39507000000, dividendsPaid: 11845000000, sharesOutstanding: 7753000000 },
+                    { date: "2018-06-30", calendarYear: "2018", revenue: 110360000000, netIncome: 16571000000, eps: 2.15, operatingIncome: 35058000000, grossProfit: 72007000000, costOfRevenue: 38353000000, researchAndDevelopment: 14726000000, operatingExpenses: 36949000000, ebitda: 45574000000, totalAssets: 258848000000, totalLiabilities: 176130000000, totalDebt: 72242000000, totalEquity: 82718000000, freeCashFlow: 29656000000, operatingCashFlow: 43884000000, dividendsPaid: 12699000000, sharesOutstanding: 7677000000 },
+                    { date: "2019-06-30", calendarYear: "2019", revenue: 125843000000, netIncome: 39240000000, eps: 5.06, operatingIncome: 42959000000, grossProfit: 82933000000, costOfRevenue: 42910000000, researchAndDevelopment: 16876000000, operatingExpenses: 39974000000, ebitda: 52785000000, totalAssets: 286556000000, totalLiabilities: 184226000000, totalDebt: 66662000000, totalEquity: 102330000000, freeCashFlow: 38260000000, operatingCashFlow: 52185000000, dividendsPaid: 13811000000, sharesOutstanding: 7753000000 },
+                    { date: "2020-06-30", calendarYear: "2020", revenue: 143015000000, netIncome: 44281000000, eps: 5.76, operatingIncome: 52959000000, grossProfit: 96937000000, costOfRevenue: 46078000000, researchAndDevelopment: 19269000000, operatingExpenses: 43978000000, ebitda: 64068000000, totalAssets: 301311000000, totalLiabilities: 183007000000, totalDebt: 59578000000, totalEquity: 118304000000, freeCashFlow: 45234000000, operatingCashFlow: 60675000000, dividendsPaid: 15137000000, sharesOutstanding: 7683000000 },
+                    { date: "2021-06-30", calendarYear: "2021", revenue: 168088000000, netIncome: 61271000000, eps: 8.05, operatingIncome: 69916000000, grossProfit: 115856000000, costOfRevenue: 52232000000, researchAndDevelopment: 20716000000, operatingExpenses: 45940000000, ebitda: 82145000000, totalAssets: 333779000000, totalLiabilities: 191791000000, totalDebt: 58154000000, totalEquity: 141988000000, freeCashFlow: 56118000000, operatingCashFlow: 76740000000, dividendsPaid: 16521000000, sharesOutstanding: 7608000000 },
+                    { date: "2022-06-30", calendarYear: "2022", revenue: 198270000000, netIncome: 72738000000, eps: 9.65, operatingIncome: 83383000000, grossProfit: 135620000000, costOfRevenue: 62650000000, researchAndDevelopment: 24512000000, operatingExpenses: 52237000000, ebitda: 97205000000, totalAssets: 364840000000, totalLiabilities: 198298000000, totalDebt: 58055000000, totalEquity: 166542000000, freeCashFlow: 65149000000, operatingCashFlow: 89035000000, dividendsPaid: 17984000000, sharesOutstanding: 7540000000 },
+                    { date: "2023-06-30", calendarYear: "2023", revenue: 211915000000, netIncome: 72361000000, eps: 9.68, operatingIncome: 88523000000, grossProfit: 146052000000, costOfRevenue: 65863000000, researchAndDevelopment: 27195000000, operatingExpenses: 57529000000, ebitda: 104975000000, totalAssets: 411976000000, totalLiabilities: 205753000000, totalDebt: 60300000000, totalEquity: 206223000000, freeCashFlow: 68161000000, operatingCashFlow: 87582000000, dividendsPaid: 19800000000, sharesOutstanding: 7472000000 },
+                    { date: "2024-06-30", calendarYear: "2024", revenue: 245122000000, netIncome: 88136000000, eps: 11.80, operatingIncome: 109435000000, grossProfit: 171465000000, costOfRevenue: 73657000000, researchAndDevelopment: 28576000000, operatingExpenses: 62030000000, ebitda: 127200000000, totalAssets: 512164000000, totalLiabilities: 254683000000, totalDebt: 72700000000, totalEquity: 257481000000, freeCashFlow: 74094000000, operatingCashFlow: 118548000000, dividendsPaid: 21900000000, sharesOutstanding: 7471000000 },
+                    { date: "2025-06-30", calendarYear: "2025", revenue: 275000000000, netIncome: 100000000000, eps: 13.40, operatingIncome: 125000000000, grossProfit: 192000000000, costOfRevenue: 83000000000, researchAndDevelopment: 31000000000, operatingExpenses: 67000000000, ebitda: 145000000000, totalAssets: 580000000000, totalLiabilities: 280000000000, totalDebt: 75000000000, totalEquity: 300000000000, freeCashFlow: 85000000000, operatingCashFlow: 135000000000, dividendsPaid: 24500000000, sharesOutstanding: 7465000000 }
                 ],
                 GOOGL: [
-                    { date: "2019-12-31", calendarYear: "2019", revenue: 161857000000, netIncome: 34343000000, eps: 49.59, operatingIncome: 34231000000 },
-                    { date: "2020-12-31", calendarYear: "2020", revenue: 182527000000, netIncome: 40269000000, eps: 58.61, operatingIncome: 41224000000 },
-                    { date: "2021-12-31", calendarYear: "2021", revenue: 257637000000, netIncome: 76033000000, eps: 112.20, operatingIncome: 78714000000 },
-                    { date: "2022-12-31", calendarYear: "2022", revenue: 282836000000, netIncome: 59972000000, eps: 88.20, operatingIncome: 74842000000 },
-                    { date: "2023-12-31", calendarYear: "2023", revenue: 307394000000, netIncome: 73795000000, eps: 108.84, operatingIncome: 84266000000 }
+                    { date: "2016-12-31", calendarYear: "2016", revenue: 90272000000, netIncome: 19478000000, eps: 28.31, operatingIncome: 23716000000, grossProfit: 52186000000, costOfRevenue: 38086000000, researchAndDevelopment: 13948000000, operatingExpenses: 28470000000, ebitda: 30521000000, totalAssets: 167497000000, totalLiabilities: 44793000000, totalDebt: 3969000000, totalEquity: 122704000000, freeCashFlow: 17500000000, operatingCashFlow: 36036000000, dividendsPaid: 0, sharesOutstanding: 688000000 },
+                    { date: "2017-12-31", calendarYear: "2017", revenue: 110855000000, netIncome: 12662000000, eps: 18.27, operatingIncome: 26146000000, grossProfit: 63212000000, costOfRevenue: 47643000000, researchAndDevelopment: 16625000000, operatingExpenses: 37066000000, ebitda: 33792000000, totalAssets: 197295000000, totalLiabilities: 44793000000, totalDebt: 3969000000, totalEquity: 152502000000, freeCashFlow: 18659000000, operatingCashFlow: 37091000000, dividendsPaid: 0, sharesOutstanding: 693000000 },
+                    { date: "2018-12-31", calendarYear: "2018", revenue: 136819000000, netIncome: 30736000000, eps: 43.70, operatingIncome: 26320000000, grossProfit: 78714000000, costOfRevenue: 58105000000, researchAndDevelopment: 21419000000, operatingExpenses: 52394000000, ebitda: 38742000000, totalAssets: 232792000000, totalLiabilities: 55164000000, totalDebt: 4012000000, totalEquity: 177628000000, freeCashFlow: 21701000000, operatingCashFlow: 47971000000, dividendsPaid: 0, sharesOutstanding: 703000000 },
+                    { date: "2019-12-31", calendarYear: "2019", revenue: 161857000000, netIncome: 34343000000, eps: 49.59, operatingIncome: 34231000000, grossProfit: 89961000000, costOfRevenue: 71896000000, researchAndDevelopment: 26018000000, operatingExpenses: 55730000000, ebitda: 46618000000, totalAssets: 275909000000, totalLiabilities: 74467000000, totalDebt: 4554000000, totalEquity: 201442000000, freeCashFlow: 23495000000, operatingCashFlow: 54520000000, dividendsPaid: 0, sharesOutstanding: 692000000 },
+                    { date: "2020-12-31", calendarYear: "2020", revenue: 182527000000, netIncome: 40269000000, eps: 58.61, operatingIncome: 41224000000, grossProfit: 104956000000, costOfRevenue: 77571000000, researchAndDevelopment: 27573000000, operatingExpenses: 63732000000, ebitda: 57230000000, totalAssets: 319616000000, totalLiabilities: 97072000000, totalDebt: 13932000000, totalEquity: 222544000000, freeCashFlow: 42843000000, operatingCashFlow: 65124000000, dividendsPaid: 0, sharesOutstanding: 687000000 },
+                    { date: "2021-12-31", calendarYear: "2021", revenue: 257637000000, netIncome: 76033000000, eps: 112.20, operatingIncome: 78714000000, grossProfit: 153905000000, costOfRevenue: 103732000000, researchAndDevelopment: 31562000000, operatingExpenses: 75191000000, ebitda: 96677000000, totalAssets: 359268000000, totalLiabilities: 107633000000, totalDebt: 14817000000, totalEquity: 251635000000, freeCashFlow: 67012000000, operatingCashFlow: 91652000000, dividendsPaid: 0, sharesOutstanding: 677000000 },
+                    { date: "2022-12-31", calendarYear: "2022", revenue: 282836000000, netIncome: 59972000000, eps: 88.20, operatingIncome: 74842000000, grossProfit: 156633000000, costOfRevenue: 126203000000, researchAndDevelopment: 39500000000, operatingExpenses: 81791000000, ebitda: 95728000000, totalAssets: 365264000000, totalLiabilities: 114050000000, totalDebt: 14701000000, totalEquity: 251214000000, freeCashFlow: 60010000000, operatingCashFlow: 91495000000, dividendsPaid: 0, sharesOutstanding: 680000000 },
+                    { date: "2023-12-31", calendarYear: "2023", revenue: 307394000000, netIncome: 73795000000, eps: 108.84, operatingIncome: 84266000000, grossProfit: 174146000000, costOfRevenue: 133248000000, researchAndDevelopment: 45427000000, operatingExpenses: 89880000000, ebitda: 111113000000, totalAssets: 402392000000, totalLiabilities: 124927000000, totalDebt: 13253000000, totalEquity: 277465000000, freeCashFlow: 69495000000, operatingCashFlow: 101736000000, dividendsPaid: 0, sharesOutstanding: 678000000 },
+                    { date: "2024-12-31", calendarYear: "2024", revenue: 339600000000, netIncome: 83800000000, eps: 123.50, operatingIncome: 96500000000, grossProfit: 193000000000, costOfRevenue: 146600000000, researchAndDevelopment: 48500000000, operatingExpenses: 96500000000, ebitda: 125000000000, totalAssets: 442000000000, totalLiabilities: 135000000000, totalDebt: 13000000000, totalEquity: 307000000000, freeCashFlow: 78000000000, operatingCashFlow: 112000000000, dividendsPaid: 0, sharesOutstanding: 679000000 },
+                    { date: "2025-12-31", calendarYear: "2025", revenue: 375000000000, netIncome: 95000000000, eps: 140.00, operatingIncome: 110000000000, grossProfit: 215000000000, costOfRevenue: 160000000000, researchAndDevelopment: 52000000000, operatingExpenses: 105000000000, ebitda: 142000000000, totalAssets: 485000000000, totalLiabilities: 145000000000, totalDebt: 12500000000, totalEquity: 340000000000, freeCashFlow: 88000000000, operatingCashFlow: 125000000000, dividendsPaid: 0, sharesOutstanding: 679000000 }
                 ],
                 Z: [
-                    { date: "2020-12-31", calendarYear: "2020", revenue: 3340000000, netIncome: -162000000, eps: -0.70, operatingIncome: -233000000 },
-                    { date: "2021-12-31", calendarYear: "2021", revenue: 8148000000, netIncome: -528000000, eps: -2.06, operatingIncome: -517000000 },
-                    { date: "2022-12-31", calendarYear: "2022", revenue: 1958000000, netIncome: -1325000000, eps: -5.19, operatingIncome: -1296000000 },
-                    { date: "2023-12-31", calendarYear: "2023", revenue: 2059000000, netIncome: -50000000, eps: -0.19, operatingIncome: -32000000 },
-                    { date: "2024-12-31", calendarYear: "2024", revenue: 2132000000, netIncome: 89000000, eps: 0.34, operatingIncome: 124000000 },
-                    { date: "2025-12-31", calendarYear: "2025", revenue: 2245000000, netIncome: 156000000, eps: 0.58, operatingIncome: 198000000 }
+                    { date: "2016-12-31", calendarYear: "2016", revenue: 1070000000, netIncome: -102000000, eps: -0.51, operatingIncome: -64000000, grossProfit: 722000000, costOfRevenue: 348000000, researchAndDevelopment: 215000000, operatingExpenses: 786000000, ebitda: -42000000, totalAssets: 3420000000, totalLiabilities: 1850000000, totalDebt: 527000000, totalEquity: 1570000000, freeCashFlow: -85000000, operatingCashFlow: -45000000, dividendsPaid: 0, sharesOutstanding: 200000000 },
+                    { date: "2017-12-31", calendarYear: "2017", revenue: 1073000000, netIncome: -67000000, eps: -0.33, operatingIncome: -35000000, grossProfit: 777000000, costOfRevenue: 296000000, researchAndDevelopment: 245000000, operatingExpenses: 812000000, ebitda: -18000000, totalAssets: 3875000000, totalLiabilities: 2130000000, totalDebt: 713000000, totalEquity: 1745000000, freeCashFlow: -52000000, operatingCashFlow: -22000000, dividendsPaid: 0, sharesOutstanding: 205000000 },
+                    { date: "2018-12-31", calendarYear: "2018", revenue: 1331000000, netIncome: -110000000, eps: -0.52, operatingIncome: -71000000, grossProfit: 889000000, costOfRevenue: 442000000, researchAndDevelopment: 301000000, operatingExpenses: 960000000, ebitda: -52000000, totalAssets: 4270000000, totalLiabilities: 2360000000, totalDebt: 862000000, totalEquity: 1910000000, freeCashFlow: -88000000, operatingCashFlow: -58000000, dividendsPaid: 0, sharesOutstanding: 212000000 },
+                    { date: "2019-12-31", calendarYear: "2019", revenue: 2742000000, netIncome: -305000000, eps: -1.30, operatingIncome: -193000000, grossProfit: 1836000000, costOfRevenue: 906000000, researchAndDevelopment: 428000000, operatingExpenses: 2029000000, ebitda: -155000000, totalAssets: 5840000000, totalLiabilities: 3420000000, totalDebt: 1455000000, totalEquity: 2420000000, freeCashFlow: -245000000, operatingCashFlow: -198000000, dividendsPaid: 0, sharesOutstanding: 235000000 },
+                    { date: "2020-12-31", calendarYear: "2020", revenue: 3340000000, netIncome: -162000000, eps: -0.70, operatingIncome: -233000000, grossProfit: 2336000000, costOfRevenue: 1004000000, researchAndDevelopment: 487000000, operatingExpenses: 2569000000, ebitda: -194000000, totalAssets: 7140000000, totalLiabilities: 4350000000, totalDebt: 1777000000, totalEquity: 2790000000, freeCashFlow: -125000000, operatingCashFlow: -75000000, dividendsPaid: 0, sharesOutstanding: 231000000 },
+                    { date: "2021-12-31", calendarYear: "2021", revenue: 8148000000, netIncome: -528000000, eps: -2.06, operatingIncome: -517000000, grossProfit: 5687000000, costOfRevenue: 2461000000, researchAndDevelopment: 856000000, operatingExpenses: 6204000000, ebitda: -445000000, totalAssets: 9670000000, totalLiabilities: 7230000000, totalDebt: 2940000000, totalEquity: 2440000000, freeCashFlow: -412000000, operatingCashFlow: -320000000, dividendsPaid: 0, sharesOutstanding: 256000000 },
+                    { date: "2022-12-31", calendarYear: "2022", revenue: 1958000000, netIncome: -1325000000, eps: -5.19, operatingIncome: -1296000000, grossProfit: 1146000000, costOfRevenue: 812000000, researchAndDevelopment: 425000000, operatingExpenses: 2442000000, ebitda: -1215000000, totalAssets: 5540000000, totalLiabilities: 5010000000, totalDebt: 2450000000, totalEquity: 530000000, freeCashFlow: -1100000000, operatingCashFlow: -980000000, dividendsPaid: 0, sharesOutstanding: 255000000 },
+                    { date: "2023-12-31", calendarYear: "2023", revenue: 2059000000, netIncome: -50000000, eps: -0.19, operatingIncome: -32000000, grossProfit: 1412000000, costOfRevenue: 647000000, researchAndDevelopment: 365000000, operatingExpenses: 1444000000, ebitda: 12000000, totalAssets: 4980000000, totalLiabilities: 4380000000, totalDebt: 2180000000, totalEquity: 600000000, freeCashFlow: -22000000, operatingCashFlow: 18000000, dividendsPaid: 0, sharesOutstanding: 262000000 },
+                    { date: "2024-12-31", calendarYear: "2024", revenue: 2132000000, netIncome: 89000000, eps: 0.34, operatingIncome: 124000000, grossProfit: 1478000000, costOfRevenue: 654000000, researchAndDevelopment: 340000000, operatingExpenses: 1354000000, ebitda: 167000000, totalAssets: 5120000000, totalLiabilities: 4210000000, totalDebt: 2050000000, totalEquity: 910000000, freeCashFlow: 65000000, operatingCashFlow: 112000000, dividendsPaid: 0, sharesOutstanding: 263000000 },
+                    { date: "2025-12-31", calendarYear: "2025", revenue: 2245000000, netIncome: 156000000, eps: 0.58, operatingIncome: 198000000, grossProfit: 1572000000, costOfRevenue: 673000000, researchAndDevelopment: 350000000, operatingExpenses: 1374000000, ebitda: 245000000, totalAssets: 5380000000, totalLiabilities: 4130000000, totalDebt: 1920000000, totalEquity: 1250000000, freeCashFlow: 128000000, operatingCashFlow: 178000000, dividendsPaid: 0, sharesOutstanding: 269000000 }
                 ]
             };
 
@@ -468,21 +533,22 @@ Keep the analysis concise and actionable.`;
                     plugins: {
                         legend: {
                             labels: {
-                                color: 'white',
+                                color: '#000000',
                                 font: {
-                                    size: 12
+                                    size: 12,
+                                    family: 'Inter'
                                 }
                             }
                         }
                     },
                     scales: {
                         x: {
-                            ticks: { color: 'white' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            ticks: { color: '#545454' },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
                         },
                         y: {
-                            ticks: { color: 'white' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            ticks: { color: '#545454' },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
                         }
                     }
                 };
@@ -584,37 +650,49 @@ Keep the analysis concise and actionable.`;
             return (
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
-                    <div className="glass rounded-2xl p-6 md:p-8 mb-6 animate-fade-in">
-                        <h1 className="text-3xl md:text-5xl font-bold text-white mb-2">
-                            📊 AI Earnings Analyzer
-                        </h1>
-                        <p className="text-gray-200 text-sm md:text-base">
+                    <div className="card rounded-2xl p-6 md:p-8 mb-6 animate-fade-in">
+                        <div className="flex items-center gap-3 mb-2">
+                            <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            <h1 className="text-3xl md:text-5xl font-bold text-black">
+                                AI Earnings Analyzer
+                            </h1>
+                        </div>
+                        <p className="text-gray-600 text-sm md:text-base">
                             Analyze company earnings with AI-powered insights from Claude and Gemini
                         </p>
                     </div>
 
                     {/* API Settings */}
-                    <div className="glass rounded-2xl p-6 mb-6 animate-fade-in">
+                    <div className="card rounded-2xl p-6 mb-6 animate-fade-in">
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-                                🔐 API Configuration
-                            </h2>
+                            <div className="flex items-center gap-2">
+                                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                <h2 className="text-xl font-semibold text-black">
+                                    API Configuration
+                                </h2>
+                            </div>
                             <div className="flex gap-3 items-center">
                                 <button
                                     onClick={() => setDemoMode(!demoMode)}
                                     className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
                                         demoMode
-                                            ? 'bg-green-600 text-white'
-                                            : 'glass-dark text-gray-300 hover:bg-white hover:bg-opacity-10'
+                                            ? 'btn-success'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                                 >
-                                    {demoMode ? '✅ Demo Mode' : '🎭 Demo Mode'}
+                                    {demoMode ? 'Demo Mode ON' : 'Demo Mode'}
                                 </button>
                                 <button
                                     onClick={() => setShowApiSettings(!showApiSettings)}
-                                    className="text-white hover:text-gray-300 transition-colors"
+                                    className="text-gray-700 hover:text-black transition-colors"
                                 >
-                                    {showApiSettings ? '▼' : '▶'}
+                                    <svg className={`w-5 h-5 transition-transform ${showApiSettings ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
@@ -622,7 +700,7 @@ Keep the analysis concise and actionable.`;
                         {showApiSettings && (
                             <div className="space-y-4 animate-fade-in">
                                 <div>
-                                    <label className="block text-white text-sm mb-2">
+                                    <label className="block text-gray-700 text-sm font-medium mb-2">
                                         Financial Modeling Prep API Key *
                                     </label>
                                     <input
@@ -630,14 +708,14 @@ Keep the analysis concise and actionable.`;
                                         value={fmpApiKey}
                                         onChange={(e) => setFmpApiKey(e.target.value)}
                                         placeholder="Enter your FMP API key"
-                                        className="w-full px-4 py-2 rounded-lg glass-dark text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="input-field w-full px-4 py-2 rounded-lg text-black placeholder-gray-400"
                                     />
-                                    <p className="text-gray-300 text-xs mt-1">
-                                        Get your free API key at <a href="https://financialmodelingprep.com/developer/docs/" target="_blank" className="underline">financialmodelingprep.com</a>
+                                    <p className="text-gray-500 text-xs mt-1">
+                                        Get your free API key at <a href="https://financialmodelingprep.com/developer/docs/" target="_blank" className="text-black underline hover:text-gray-700">financialmodelingprep.com</a>
                                     </p>
                                 </div>
                                 <div>
-                                    <label className="block text-white text-sm mb-2">
+                                    <label className="block text-gray-700 text-sm font-medium mb-2">
                                         Claude API Key (Optional)
                                     </label>
                                     <input
@@ -645,14 +723,14 @@ Keep the analysis concise and actionable.`;
                                         value={claudeApiKey}
                                         onChange={(e) => setClaudeApiKey(e.target.value)}
                                         placeholder="Enter your Claude API key"
-                                        className="w-full px-4 py-2 rounded-lg glass-dark text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="input-field w-full px-4 py-2 rounded-lg text-black placeholder-gray-400"
                                     />
-                                    <p className="text-gray-300 text-xs mt-1">
-                                        Get your API key at <a href="https://console.anthropic.com/" target="_blank" className="underline">console.anthropic.com</a>
+                                    <p className="text-gray-500 text-xs mt-1">
+                                        Get your API key at <a href="https://console.anthropic.com/" target="_blank" className="text-black underline hover:text-gray-700">console.anthropic.com</a>
                                     </p>
                                 </div>
                                 <div>
-                                    <label className="block text-white text-sm mb-2">
+                                    <label className="block text-gray-700 text-sm font-medium mb-2">
                                         Gemini API Key (Optional)
                                     </label>
                                     <input
@@ -660,10 +738,10 @@ Keep the analysis concise and actionable.`;
                                         value={geminiApiKey}
                                         onChange={(e) => setGeminiApiKey(e.target.value)}
                                         placeholder="Enter your Gemini API key"
-                                        className="w-full px-4 py-2 rounded-lg glass-dark text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="input-field w-full px-4 py-2 rounded-lg text-black placeholder-gray-400"
                                     />
-                                    <p className="text-gray-300 text-xs mt-1">
-                                        Get your API key at <a href="https://makersuite.google.com/app/apikey" target="_blank" className="underline">makersuite.google.com</a>
+                                    <p className="text-gray-500 text-xs mt-1">
+                                        Get your API key at <a href="https://makersuite.google.com/app/apikey" target="_blank" className="text-black underline hover:text-gray-700">makersuite.google.com</a>
                                     </p>
                                 </div>
                             </div>
@@ -672,51 +750,51 @@ Keep the analysis concise and actionable.`;
 
                     {/* Quick Demo Test Buttons */}
                     {demoMode && (
-                        <div className="glass rounded-xl p-4 mb-6 animate-fade-in border border-green-500">
-                            <p className="text-white text-sm mb-3 font-semibold">🎭 Demo Mode Active - Quick Tests:</p>
+                        <div className="card rounded-xl p-4 mb-6 animate-fade-in border-2 border-green-500">
+                            <p className="text-black text-sm mb-3 font-semibold">Demo Mode Active - Quick Tests:</p>
                             <div className="flex flex-wrap gap-2">
                                 <button
                                     onClick={() => { setTicker('AAPL'); setTimeout(() => fetchEarningsData(), 100); }}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-all"
+                                    className="px-4 py-2 btn-success rounded-lg text-sm transition-all"
                                 >
-                                    ✅ Test AAPL
+                                    Test AAPL
                                 </button>
                                 <button
                                     onClick={() => { setTicker('MSFT'); setTimeout(() => fetchEarningsData(), 100); }}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-all"
+                                    className="px-4 py-2 btn-success rounded-lg text-sm transition-all"
                                 >
-                                    ✅ Test MSFT
+                                    Test MSFT
                                 </button>
                                 <button
                                     onClick={() => { setTicker('GOOGL'); setTimeout(() => fetchEarningsData(), 100); }}
-                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-all"
+                                    className="px-4 py-2 btn-success rounded-lg text-sm transition-all"
                                 >
-                                    ✅ Test GOOGL
+                                    Test GOOGL
                                 </button>
                                 <button
                                     onClick={() => { setTicker('Z'); setTimeout(() => fetchEarningsData(), 100); }}
-                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition-all"
+                                    className="px-4 py-2 btn-success rounded-lg text-sm transition-all"
                                 >
-                                    ✅ Test Z (Zillow)
+                                    Test Z (Zillow)
                                 </button>
                                 <button
                                     onClick={() => { setTicker('INVALID'); setTimeout(() => fetchEarningsData(), 100); }}
                                     className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-all"
                                 >
-                                    ❌ Test Invalid Ticker
+                                    Test Invalid
                                 </button>
                                 <button
                                     onClick={() => { setTicker(''); setTimeout(() => fetchEarningsData(), 100); }}
                                     className="px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm hover:bg-yellow-700 transition-all"
                                 >
-                                    ⚠️ Test Empty Input
+                                    Test Empty
                                 </button>
                             </div>
                         </div>
                     )}
 
                     {/* Search Section */}
-                    <div className="glass rounded-2xl p-6 mb-6 animate-fade-in">
+                    <div className="card rounded-2xl p-6 mb-6 animate-fade-in">
                         <div className="flex flex-col md:flex-row gap-4">
                             <div className="flex-1">
                                 <input
@@ -725,15 +803,15 @@ Keep the analysis concise and actionable.`;
                                     onChange={(e) => setTicker(e.target.value.toUpperCase())}
                                     onKeyPress={(e) => e.key === 'Enter' && fetchEarningsData()}
                                     placeholder="Enter stock ticker (e.g., AAPL)"
-                                    className="w-full px-4 py-3 rounded-lg glass-dark text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 text-lg"
+                                    className="input-field w-full px-4 py-3 rounded-lg text-black placeholder-gray-400 text-lg"
                                 />
-                                <div className="flex flex-wrap gap-2 mt-3">
-                                    <span className="text-white text-sm">Try:</span>
+                                <div className="flex flex-wrap gap-2 mt-3 items-center">
+                                    <span className="text-gray-600 text-sm">Try:</span>
                                     {exampleTickers.map(t => (
                                         <button
                                             key={t}
                                             onClick={() => setTicker(t)}
-                                            className="px-3 py-1 glass-dark rounded-full text-white text-sm hover:bg-white hover:bg-opacity-20 transition-all"
+                                            className="px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm hover:bg-gray-200 transition-all"
                                         >
                                             {t}
                                         </button>
@@ -743,38 +821,50 @@ Keep the analysis concise and actionable.`;
                             <button
                                 onClick={fetchEarningsData}
                                 disabled={loading}
-                                className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="btn-primary px-8 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading ? 'Loading...' : 'Analyze'}
                             </button>
                         </div>
 
                         {error && (
-                            <div className="mt-4 p-4 glass-dark rounded-lg border border-red-500">
-                                <p className="text-red-300">⚠️ {error}</p>
-                                <p className="text-gray-400 text-xs mt-2">
-                                    💡 Tip: Debug logs appear below (or press F12 on desktop)
-                                </p>
+                            <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-300">
+                                <div className="flex items-start gap-2">
+                                    <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div>
+                                        <p className="text-red-800 font-medium">{error}</p>
+                                        <p className="text-red-600 text-xs mt-1">
+                                            Tip: Debug logs appear below (or press F12 on desktop)
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
                         {/* Debug Console Viewer - FOR MOBILE/iOS DEBUGGING */}
                         {consoleLogs.length > 0 && (
-                            <div className="mt-4 p-4 glass-dark rounded-lg border border-blue-500">
+                            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-300">
                                 <div className="flex items-center justify-between mb-2">
-                                    <p className="text-blue-300 text-sm font-semibold">
-                                        📱 Debug Console ({consoleLogs.length} messages)
-                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <p className="text-blue-900 text-sm font-semibold">
+                                            Debug Console ({consoleLogs.length} messages)
+                                        </p>
+                                    </div>
                                     <div className="flex gap-2">
                                         <button
                                             onClick={copyLogsToClipboard}
                                             className="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all font-medium"
                                         >
-                                            📋 Copy All
+                                            Copy All
                                         </button>
                                         <button
                                             onClick={() => setConsoleLogs([])}
-                                            className="text-xs px-3 py-1 text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-10 rounded transition-all"
+                                            className="text-xs px-3 py-1 text-gray-600 hover:text-black hover:bg-gray-100 rounded transition-all"
                                         >
                                             Clear
                                         </button>
@@ -786,20 +876,20 @@ Keep the analysis concise and actionable.`;
                                             key={idx}
                                             className={`p-2 rounded ${
                                                 log.type === 'error'
-                                                    ? 'bg-red-900/30 text-red-300 border-l-2 border-red-500'
-                                                    : 'bg-gray-800/50 text-gray-300 border-l-2 border-blue-500'
+                                                    ? 'bg-red-100 text-red-900 border-l-2 border-red-500'
+                                                    : 'bg-white text-gray-900 border-l-2 border-blue-500'
                                             }`}
                                         >
                                             <span className="text-gray-500 mr-2">{log.time}</span>
-                                            <span className={log.type === 'error' ? 'text-red-400' : 'text-blue-400'}>
+                                            <span className={log.type === 'error' ? 'text-red-600 font-semibold' : 'text-blue-600 font-semibold'}>
                                                 [{log.type.toUpperCase()}]
                                             </span>
                                             <span className="ml-2">{log.message}</span>
                                         </div>
                                     ))}
                                 </div>
-                                <p className="text-gray-500 text-xs mt-2">
-                                    💡 Click "Copy All" to share debug info for troubleshooting
+                                <p className="text-gray-600 text-xs mt-2">
+                                    Click "Copy All" to share debug info for troubleshooting
                                 </p>
                             </div>
                         )}
@@ -807,9 +897,9 @@ Keep the analysis concise and actionable.`;
 
                     {/* Loading Spinner */}
                     {loading && (
-                        <div className="glass rounded-2xl p-12 mb-6 flex flex-col items-center justify-center animate-fade-in">
+                        <div className="card rounded-2xl p-12 mb-6 flex flex-col items-center justify-center animate-fade-in">
                             <div className="loading-spinner mb-4"></div>
-                            <p className="text-white text-lg">Fetching earnings data...</p>
+                            <p className="text-black text-lg">Fetching earnings data...</p>
                         </div>
                     )}
 
@@ -821,33 +911,33 @@ Keep the analysis concise and actionable.`;
                                     const latest = earningsData[earningsData.length - 1];
                                     return (
                                         <>
-                                            <div className="glass rounded-xl p-6">
-                                                <p className="text-gray-300 text-sm mb-1">Revenue</p>
-                                                <p className="text-white text-2xl font-bold">
+                                            <div className="card card-hover rounded-xl p-6">
+                                                <p className="text-gray-600 text-sm mb-1 font-medium">Revenue</p>
+                                                <p className="text-black text-2xl font-bold">
                                                     ${(latest.revenue / 1e9).toFixed(2)}B
                                                 </p>
-                                                <p className="text-gray-400 text-xs mt-1">{latest.calendarYear}</p>
+                                                <p className="text-gray-500 text-xs mt-1">{latest.calendarYear}</p>
                                             </div>
-                                            <div className="glass rounded-xl p-6">
-                                                <p className="text-gray-300 text-sm mb-1">Net Income</p>
-                                                <p className="text-white text-2xl font-bold">
+                                            <div className="card card-hover rounded-xl p-6">
+                                                <p className="text-gray-600 text-sm mb-1 font-medium">Net Income</p>
+                                                <p className="text-black text-2xl font-bold">
                                                     ${(latest.netIncome / 1e9).toFixed(2)}B
                                                 </p>
-                                                <p className="text-gray-400 text-xs mt-1">{latest.calendarYear}</p>
+                                                <p className="text-gray-500 text-xs mt-1">{latest.calendarYear}</p>
                                             </div>
-                                            <div className="glass rounded-xl p-6">
-                                                <p className="text-gray-300 text-sm mb-1">EPS</p>
-                                                <p className="text-white text-2xl font-bold">
+                                            <div className="card card-hover rounded-xl p-6">
+                                                <p className="text-gray-600 text-sm mb-1 font-medium">EPS</p>
+                                                <p className="text-black text-2xl font-bold">
                                                     ${latest.eps?.toFixed(2)}
                                                 </p>
-                                                <p className="text-gray-400 text-xs mt-1">{latest.calendarYear}</p>
+                                                <p className="text-gray-500 text-xs mt-1">{latest.calendarYear}</p>
                                             </div>
-                                            <div className="glass rounded-xl p-6">
-                                                <p className="text-gray-300 text-sm mb-1">Net Margin</p>
-                                                <p className="text-white text-2xl font-bold">
+                                            <div className="card card-hover rounded-xl p-6">
+                                                <p className="text-gray-600 text-sm mb-1 font-medium">Net Margin</p>
+                                                <p className="text-black text-2xl font-bold">
                                                     {((latest.netIncome / latest.revenue) * 100).toFixed(2)}%
                                                 </p>
-                                                <p className="text-gray-400 text-xs mt-1">{latest.calendarYear}</p>
+                                                <p className="text-gray-500 text-xs mt-1">{latest.calendarYear}</p>
                                             </div>
                                         </>
                                     );
@@ -856,8 +946,8 @@ Keep the analysis concise and actionable.`;
 
                             {/* Charts */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                                <div className="glass rounded-2xl p-6 animate-fade-in">
-                                    <h3 className="text-xl font-semibold text-white mb-4">
+                                <div className="card rounded-2xl p-6 animate-fade-in">
+                                    <h3 className="text-xl font-semibold text-black mb-4">
                                         Revenue & Net Income
                                     </h3>
                                     <div className="chart-container">
@@ -865,8 +955,8 @@ Keep the analysis concise and actionable.`;
                                     </div>
                                 </div>
 
-                                <div className="glass rounded-2xl p-6 animate-fade-in">
-                                    <h3 className="text-xl font-semibold text-white mb-4">
+                                <div className="card rounded-2xl p-6 animate-fade-in">
+                                    <h3 className="text-xl font-semibold text-black mb-4">
                                         Earnings Per Share (EPS)
                                     </h3>
                                     <div className="chart-container">
@@ -874,8 +964,8 @@ Keep the analysis concise and actionable.`;
                                     </div>
                                 </div>
 
-                                <div className="glass rounded-2xl p-6 animate-fade-in lg:col-span-2">
-                                    <h3 className="text-xl font-semibold text-white mb-4">
+                                <div className="card rounded-2xl p-6 animate-fade-in lg:col-span-2">
+                                    <h3 className="text-xl font-semibold text-black mb-4">
                                         Profit Margins
                                     </h3>
                                     <div className="chart-container">
@@ -885,10 +975,15 @@ Keep the analysis concise and actionable.`;
                             </div>
 
                             {/* AI Analysis Section */}
-                            <div className="glass rounded-2xl p-6 animate-fade-in">
-                                <h3 className="text-xl font-semibold text-white mb-4">
-                                    🤖 AI Analysis
-                                </h3>
+                            <div className="card rounded-2xl p-6 animate-fade-in">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                    </svg>
+                                    <h3 className="text-xl font-semibold text-black">
+                                        AI Analysis
+                                    </h3>
+                                </div>
 
                                 <div className="flex flex-col md:flex-row gap-4 mb-4">
                                     <div className="flex gap-2">
@@ -896,8 +991,8 @@ Keep the analysis concise and actionable.`;
                                             onClick={() => setSelectedAI('claude')}
                                             className={`px-4 py-2 rounded-lg font-medium transition-all ${
                                                 selectedAI === 'claude'
-                                                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                                                    : 'glass-dark text-gray-300 hover:bg-white hover:bg-opacity-10'
+                                                    ? 'btn-primary'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                             }`}
                                         >
                                             Claude AI
@@ -906,8 +1001,8 @@ Keep the analysis concise and actionable.`;
                                             onClick={() => setSelectedAI('gemini')}
                                             className={`px-4 py-2 rounded-lg font-medium transition-all ${
                                                 selectedAI === 'gemini'
-                                                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                                                    : 'glass-dark text-gray-300 hover:bg-white hover:bg-opacity-10'
+                                                    ? 'btn-primary'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                             }`}
                                         >
                                             Gemini AI
@@ -916,7 +1011,7 @@ Keep the analysis concise and actionable.`;
                                     <button
                                         onClick={analyzeWithAI}
                                         disabled={analyzing}
-                                        className="px-8 py-2 bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-lg font-semibold hover:from-green-600 hover:to-teal-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="btn-success px-8 py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {analyzing ? 'Analyzing...' : 'Get AI Insights'}
                                     </button>
@@ -925,17 +1020,17 @@ Keep the analysis concise and actionable.`;
                                 {analyzing && (
                                     <div className="flex items-center justify-center py-8">
                                         <div className="loading-spinner"></div>
-                                        <p className="text-white ml-4">Analyzing with {selectedAI === 'claude' ? 'Claude' : 'Gemini'}...</p>
+                                        <p className="text-black ml-4">Analyzing with {selectedAI === 'claude' ? 'Claude' : 'Gemini'}...</p>
                                     </div>
                                 )}
 
                                 {aiAnalysis && (
-                                    <div className="glass-dark rounded-lg p-6 animate-fade-in">
-                                        <div className="text-white whitespace-pre-wrap leading-relaxed">
+                                    <div className="bg-gray-50 rounded-lg p-6 animate-fade-in border border-gray-200">
+                                        <div className="text-gray-900 whitespace-pre-wrap leading-relaxed">
                                             {aiAnalysis}
                                         </div>
-                                        <div className="mt-4 pt-4 border-t border-gray-600">
-                                            <p className="text-gray-400 text-sm">
+                                        <div className="mt-4 pt-4 border-t border-gray-300">
+                                            <p className="text-gray-600 text-sm">
                                                 Analysis powered by {selectedAI === 'claude' ? 'Claude AI' : 'Gemini AI'}
                                             </p>
                                         </div>
@@ -946,11 +1041,11 @@ Keep the analysis concise and actionable.`;
                     )}
 
                     {/* Footer */}
-                    <div className="glass rounded-2xl p-6 mt-6 text-center animate-fade-in">
-                        <p className="text-gray-200 text-sm">
-                            Built with ❤️ using React, Chart.js, Tailwind CSS, Claude AI, and Gemini AI
+                    <div className="card rounded-2xl p-6 mt-6 text-center animate-fade-in">
+                        <p className="text-gray-700 text-sm">
+                            Built with React, Chart.js, Tailwind CSS, Claude AI, and Gemini AI
                         </p>
-                        <p className="text-gray-300 text-xs mt-2">
+                        <p className="text-gray-500 text-xs mt-2">
                             Data provided by Financial Modeling Prep API
                         </p>
                     </div>
