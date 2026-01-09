@@ -92,6 +92,8 @@
             const [analyzing, setAnalyzing] = useState(false);
             const [error, setError] = useState('');
             const [showApiSettings, setShowApiSettings] = useState(false);
+            const [demoMode, setDemoMode] = useState(false);
+            const [consoleLogs, setConsoleLogs] = useState([]);
 
             const revenueChartRef = useRef(null);
             const epsChartRef = useRef(null);
@@ -107,9 +109,129 @@
                 if (geminiApiKey) localStorage.setItem('geminiApiKey', geminiApiKey);
             }, [fmpApiKey, claudeApiKey, geminiApiKey]);
 
+            // Capture console logs for mobile debugging
+            useEffect(() => {
+                const originalLog = console.log;
+                const originalError = console.error;
+
+                console.log = (...args) => {
+                    originalLog(...args);
+                    setConsoleLogs(prev => [...prev.slice(-19), {
+                        type: 'log',
+                        message: args.map(arg =>
+                            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                        ).join(' '),
+                        time: new Date().toLocaleTimeString()
+                    }]);
+                };
+
+                console.error = (...args) => {
+                    originalError(...args);
+                    setConsoleLogs(prev => [...prev.slice(-19), {
+                        type: 'error',
+                        message: args.map(arg =>
+                            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                        ).join(' '),
+                        time: new Date().toLocaleTimeString()
+                    }]);
+                };
+
+                return () => {
+                    console.log = originalLog;
+                    console.error = originalError;
+                };
+            }, []);
+
+            // Demo data for testing without API keys
+            const DEMO_DATA = {
+                AAPL: [
+                    { date: "2019-09-28", calendarYear: "2019", revenue: 260174000000, netIncome: 55256000000, eps: 2.97, operatingIncome: 63930000000 },
+                    { date: "2020-09-26", calendarYear: "2020", revenue: 274515000000, netIncome: 57411000000, eps: 3.28, operatingIncome: 66288000000 },
+                    { date: "2021-09-25", calendarYear: "2021", revenue: 365817000000, netIncome: 94680000000, eps: 5.61, operatingIncome: 108949000000 },
+                    { date: "2022-09-24", calendarYear: "2022", revenue: 394328000000, netIncome: 99803000000, eps: 6.11, operatingIncome: 119437000000 },
+                    { date: "2023-09-30", calendarYear: "2023", revenue: 383285000000, netIncome: 96995000000, eps: 6.16, operatingIncome: 114301000000 }
+                ],
+                MSFT: [
+                    { date: "2019-06-30", calendarYear: "2019", revenue: 125843000000, netIncome: 39240000000, eps: 5.06, operatingIncome: 42959000000 },
+                    { date: "2020-06-30", calendarYear: "2020", revenue: 143015000000, netIncome: 44281000000, eps: 5.76, operatingIncome: 52959000000 },
+                    { date: "2021-06-30", calendarYear: "2021", revenue: 168088000000, netIncome: 61271000000, eps: 8.05, operatingIncome: 69916000000 },
+                    { date: "2022-06-30", calendarYear: "2022", revenue: 198270000000, netIncome: 72738000000, eps: 9.65, operatingIncome: 83383000000 },
+                    { date: "2023-06-30", calendarYear: "2023", revenue: 211915000000, netIncome: 72361000000, eps: 9.68, operatingIncome: 88523000000 }
+                ],
+                GOOGL: [
+                    { date: "2019-12-31", calendarYear: "2019", revenue: 161857000000, netIncome: 34343000000, eps: 49.59, operatingIncome: 34231000000 },
+                    { date: "2020-12-31", calendarYear: "2020", revenue: 182527000000, netIncome: 40269000000, eps: 58.61, operatingIncome: 41224000000 },
+                    { date: "2021-12-31", calendarYear: "2021", revenue: 257637000000, netIncome: 76033000000, eps: 112.20, operatingIncome: 78714000000 },
+                    { date: "2022-12-31", calendarYear: "2022", revenue: 282836000000, netIncome: 59972000000, eps: 88.20, operatingIncome: 74842000000 },
+                    { date: "2023-12-31", calendarYear: "2023", revenue: 307394000000, netIncome: 73795000000, eps: 108.84, operatingIncome: 84266000000 }
+                ],
+                Z: [
+                    { date: "2019-12-31", calendarYear: "2019", revenue: 2742000000, netIncome: -305000000, eps: -1.30, operatingIncome: -193000000 },
+                    { date: "2020-12-31", calendarYear: "2020", revenue: 3340000000, netIncome: -162000000, eps: -0.70, operatingIncome: -233000000 },
+                    { date: "2021-12-31", calendarYear: "2021", revenue: 8148000000, netIncome: -528000000, eps: -2.06, operatingIncome: -517000000 },
+                    { date: "2022-12-31", calendarYear: "2022", revenue: 1958000000, netIncome: -1325000000, eps: -5.19, operatingIncome: -1296000000 },
+                    { date: "2023-12-31", calendarYear: "2023", revenue: 2059000000, netIncome: -50000000, eps: -0.19, operatingIncome: -32000000 }
+                ]
+            };
+
+            // Copy debug logs to clipboard
+            const copyLogsToClipboard = () => {
+                const debugInfo = `=== EARNINGS ANALYZER DEBUG REPORT ===
+Timestamp: ${new Date().toISOString()}
+Browser: ${navigator.userAgent}
+Screen: ${window.innerWidth}x${window.innerHeight}
+Demo Mode: ${demoMode ? 'ON' : 'OFF'}
+
+App State:
+- Ticker: ${ticker || '(empty)'}
+- Has FMP Key: ${fmpApiKey ? 'Yes (' + fmpApiKey.substring(0, 8) + '...)' : 'No'}
+- Has Claude Key: ${claudeApiKey ? 'Yes' : 'No'}
+- Has Gemini Key: ${geminiApiKey ? 'Yes' : 'No'}
+- Selected AI: ${selectedAI}
+- Earnings Data Loaded: ${earningsData ? 'Yes (' + earningsData.length + ' years)' : 'No'}
+- AI Analysis: ${aiAnalysis ? 'Yes (' + aiAnalysis.length + ' chars)' : 'No'}
+- Current Error: ${error || 'None'}
+- Loading: ${loading ? 'Yes' : 'No'}
+- Analyzing: ${analyzing ? 'Yes' : 'No'}
+
+Console Logs (${consoleLogs.length} total):
+${consoleLogs.map(log => `[${log.time}] ${log.type.toUpperCase()}: ${log.message}`).join('\n')}
+
+=========================================`;
+
+                navigator.clipboard.writeText(debugInfo).then(() => {
+                    const tempMsg = error;
+                    setError('✅ Debug info copied to clipboard! Paste it to share.');
+                    setTimeout(() => setError(tempMsg), 3000);
+                }).catch(() => {
+                    alert('Could not copy to clipboard. Please select and copy the console logs manually.');
+                });
+            };
+
             const fetchEarningsData = async () => {
                 if (!ticker.trim()) {
                     setError('Please enter a stock ticker symbol');
+                    return;
+                }
+
+                // Demo Mode: Use sample data
+                if (demoMode) {
+                    console.log('🎭 Demo Mode: Using sample data for', ticker.toUpperCase());
+                    setLoading(true);
+                    setError('');
+                    setEarningsData(null);
+                    setAiAnalysis('');
+
+                    setTimeout(() => {
+                        const demoData = DEMO_DATA[ticker.toUpperCase()];
+                        if (demoData) {
+                            setEarningsData(demoData);
+                            console.log('✅ Demo data loaded successfully:', demoData.length, 'years');
+                        } else {
+                            setError(`Demo data not available for "${ticker.toUpperCase()}". Available tickers: AAPL, MSFT, GOOGL, Z (Zillow)`);
+                        }
+                        setLoading(false);
+                    }, 800);
                     return;
                 }
 
@@ -476,12 +598,24 @@ Keep the analysis concise and actionable.`;
                             <h2 className="text-xl font-semibold text-white flex items-center gap-2">
                                 🔐 API Configuration
                             </h2>
-                            <button
-                                onClick={() => setShowApiSettings(!showApiSettings)}
-                                className="text-white hover:text-gray-300 transition-colors"
-                            >
-                                {showApiSettings ? '▼' : '▶'}
-                            </button>
+                            <div className="flex gap-3 items-center">
+                                <button
+                                    onClick={() => setDemoMode(!demoMode)}
+                                    className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+                                        demoMode
+                                            ? 'bg-green-600 text-white'
+                                            : 'glass-dark text-gray-300 hover:bg-white hover:bg-opacity-10'
+                                    }`}
+                                >
+                                    {demoMode ? '✅ Demo Mode' : '🎭 Demo Mode'}
+                                </button>
+                                <button
+                                    onClick={() => setShowApiSettings(!showApiSettings)}
+                                    className="text-white hover:text-gray-300 transition-colors"
+                                >
+                                    {showApiSettings ? '▼' : '▶'}
+                                </button>
+                            </div>
                         </div>
 
                         {showApiSettings && (
@@ -535,6 +669,51 @@ Keep the analysis concise and actionable.`;
                         )}
                     </div>
 
+                    {/* Quick Demo Test Buttons */}
+                    {demoMode && (
+                        <div className="glass rounded-xl p-4 mb-6 animate-fade-in border border-green-500">
+                            <p className="text-white text-sm mb-3 font-semibold">🎭 Demo Mode Active - Quick Tests:</p>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => { setTicker('AAPL'); setTimeout(() => fetchEarningsData(), 100); }}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-all"
+                                >
+                                    ✅ Test AAPL
+                                </button>
+                                <button
+                                    onClick={() => { setTicker('MSFT'); setTimeout(() => fetchEarningsData(), 100); }}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-all"
+                                >
+                                    ✅ Test MSFT
+                                </button>
+                                <button
+                                    onClick={() => { setTicker('GOOGL'); setTimeout(() => fetchEarningsData(), 100); }}
+                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-all"
+                                >
+                                    ✅ Test GOOGL
+                                </button>
+                                <button
+                                    onClick={() => { setTicker('Z'); setTimeout(() => fetchEarningsData(), 100); }}
+                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition-all"
+                                >
+                                    ✅ Test Z (Zillow)
+                                </button>
+                                <button
+                                    onClick={() => { setTicker('INVALID'); setTimeout(() => fetchEarningsData(), 100); }}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-all"
+                                >
+                                    ❌ Test Invalid Ticker
+                                </button>
+                                <button
+                                    onClick={() => { setTicker(''); setTimeout(() => fetchEarningsData(), 100); }}
+                                    className="px-4 py-2 bg-yellow-600 text-white rounded-lg text-sm hover:bg-yellow-700 transition-all"
+                                >
+                                    ⚠️ Test Empty Input
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Search Section */}
                     <div className="glass rounded-2xl p-6 mb-6 animate-fade-in">
                         <div className="flex flex-col md:flex-row gap-4">
@@ -573,7 +752,53 @@ Keep the analysis concise and actionable.`;
                             <div className="mt-4 p-4 glass-dark rounded-lg border border-red-500">
                                 <p className="text-red-300">⚠️ {error}</p>
                                 <p className="text-gray-400 text-xs mt-2">
-                                    💡 Tip: Press F12 to open browser console for detailed error information
+                                    💡 Tip: Debug logs appear below (or press F12 on desktop)
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Debug Console Viewer - FOR MOBILE/iOS DEBUGGING */}
+                        {consoleLogs.length > 0 && (
+                            <div className="mt-4 p-4 glass-dark rounded-lg border border-blue-500">
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className="text-blue-300 text-sm font-semibold">
+                                        📱 Debug Console ({consoleLogs.length} messages)
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={copyLogsToClipboard}
+                                            className="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all font-medium"
+                                        >
+                                            📋 Copy All
+                                        </button>
+                                        <button
+                                            onClick={() => setConsoleLogs([])}
+                                            className="text-xs px-3 py-1 text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-10 rounded transition-all"
+                                        >
+                                            Clear
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="max-h-60 overflow-y-auto space-y-1 font-mono text-xs">
+                                    {consoleLogs.map((log, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`p-2 rounded ${
+                                                log.type === 'error'
+                                                    ? 'bg-red-900/30 text-red-300 border-l-2 border-red-500'
+                                                    : 'bg-gray-800/50 text-gray-300 border-l-2 border-blue-500'
+                                            }`}
+                                        >
+                                            <span className="text-gray-500 mr-2">{log.time}</span>
+                                            <span className={log.type === 'error' ? 'text-red-400' : 'text-blue-400'}>
+                                                [{log.type.toUpperCase()}]
+                                            </span>
+                                            <span className="ml-2">{log.message}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-gray-500 text-xs mt-2">
+                                    💡 Click "Copy All" to share debug info for troubleshooting
                                 </p>
                             </div>
                         )}
